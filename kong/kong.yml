@@ -1,0 +1,14 @@
+_format_version: "3.0"
+
+services:
+  - name: cms-api-service
+    url: http://nginx:80
+    routes:
+      - name: cms-api-route
+        paths:
+          - /api
+        strip_path: false
+      - name: cms-health-route
+        paths:
+          - /health
+        strip_path: false
