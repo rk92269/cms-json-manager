@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Editor from "@monaco-editor/react";
 import ReactJson from "react-json-view";
 
 const formatJson = (value) => JSON.stringify(value, null, 2);
@@ -53,6 +54,8 @@ function JsonEditorPanel({ document, onSave, onClose }) {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("pretty");
   const [activeMetaTab, setActiveMetaTab] = useState("response");
+  const [editorMode, setEditorMode] = useState("monaco");
+  const [editorReady, setEditorReady] = useState(false);
   const safeDocument = document || {};
   const isSavedDocument = Boolean(document?._id);
   const schemaPreview = buildSchema(jsonData);
@@ -68,6 +71,7 @@ function JsonEditorPanel({ document, onSave, onClose }) {
       setError("");
       setActiveTab("pretty");
       setActiveMetaTab("response");
+      setEditorMode("monaco");
     }
   }, [document]);
 
@@ -78,11 +82,24 @@ function JsonEditorPanel({ document, onSave, onClose }) {
     setError("");
   };
 
+  const handleEditorChange = (value = "") => {
+    setRawJson(value);
+
+    try {
+      const parsedJson = JSON.parse(value);
+      setJsonData(parsedJson);
+      setError("");
+    } catch (parseError) {
+      setError(`Invalid JSON: ${parseError.message}`);
+    }
+  };
+
   const handleBeautify = () => {
     try {
       const parsedJson = JSON.parse(rawJson);
+      const formattedJson = formatJson(parsedJson);
       setJsonData(parsedJson);
-      setRawJson(formatJson(parsedJson));
+      setRawJson(formattedJson);
       setError("");
     } catch (parseError) {
       setError(`Beautify failed: ${parseError.message}`);
@@ -106,11 +123,19 @@ function JsonEditorPanel({ document, onSave, onClose }) {
       return;
     }
 
-    onSave({
-      ...document,
-      status,
-      jsonData,
-    });
+    try {
+      const parsedJson = JSON.parse(rawJson);
+      setJsonData(parsedJson);
+      setError("");
+
+      onSave({
+        ...document,
+        status,
+        jsonData: parsedJson,
+      });
+    } catch (parseError) {
+      setError(`Cannot save invalid JSON: ${parseError.message}`);
+    }
   };
 
   const prettyJson = formatJson(jsonData);
@@ -222,49 +247,66 @@ function JsonEditorPanel({ document, onSave, onClose }) {
 
       <div className="json-workbench">
         <div className="json-workbench-toolbar">
-          <div className="json-tab-strip" role="tablist" aria-label="JSON editor views">
-            <button
-              type="button"
-              className={activeTab === "pretty" ? "is-active" : ""}
-              onClick={() => setActiveTab("pretty")}
-            >
-              Pretty
-            </button>
-            <button
-              type="button"
-              className={activeTab === "raw" ? "is-active" : ""}
-              onClick={() => setActiveTab("raw")}
-            >
-              Raw
-            </button>
-            <button
-              type="button"
-              className={activeTab === "schema" ? "is-active" : ""}
-              onClick={() => setActiveTab("schema")}
-            >
-              Schema
-            </button>
+          <div className="json-toolbar-left">
+            <div className="json-tab-strip" role="tablist" aria-label="JSON editor views">
+              <button
+                type="button"
+                className={activeTab === "pretty" ? "is-active" : ""}
+                onClick={() => setActiveTab("pretty")}
+              >
+                Pretty
+              </button>
+              <button
+                type="button"
+                className={activeTab === "raw" ? "is-active" : ""}
+                onClick={() => setActiveTab("raw")}
+              >
+                Raw
+              </button>
+              <button
+                type="button"
+                className={activeTab === "schema" ? "is-active" : ""}
+                onClick={() => setActiveTab("schema")}
+              >
+                Schema
+              </button>
+            </div>
+
+            <div className="json-renderer-switch" role="tablist" aria-label="Editor renderer">
+              <button
+                type="button"
+                className={editorMode === "monaco" ? "is-active" : ""}
+                onClick={() => setEditorMode("monaco")}
+              >
+                Monaco
+              </button>
+              <button
+                type="button"
+                className={editorMode === "tree" ? "is-active" : ""}
+                onClick={() => setEditorMode("tree")}
+              >
+                Tree
+              </button>
+            </div>
           </div>
 
           <div className="json-toolbar-actions">
             <button type="button" onClick={handleBeautify}>
               Beautify
             </button>
-            {activeTab === "raw" && (
-              <button type="button" onClick={handleApplyRaw}>
-                Apply Raw Edits
-              </button>
-            )}
+            <button type="button" onClick={handleApplyRaw}>
+              Apply Edits
+            </button>
           </div>
         </div>
 
         <div className="json-editor-wrapper">
-          {activeTab === "pretty" && (
+          {editorMode === "tree" && activeTab !== "schema" && (
             <ReactJson
               src={jsonData}
               name={false}
               theme="rjv-default"
-              collapsed={1}
+              collapsed={activeTab === "raw" ? false : 1}
               displayDataTypes={false}
               displayObjectSize={true}
               enableClipboard={true}
@@ -274,17 +316,26 @@ function JsonEditorPanel({ document, onSave, onClose }) {
             />
           )}
 
-          {activeTab === "raw" && (
+          {editorMode === "monaco" && (activeTab === "pretty" || activeTab === "raw") && (
             <div className="json-raw-panel">
-              <textarea
-                className="json-raw-input"
+              <Editor
+                height="480px"
+                defaultLanguage="json"
+                language="json"
                 value={rawJson}
-                onChange={(event) => {
-                  setRawJson(event.target.value);
-                  setError("");
+                onChange={handleEditorChange}
+                onMount={() => setEditorReady(true)}
+                theme="vs-dark"
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 14,
+                  wordWrap: activeTab === "pretty" ? "on" : "off",
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  formatOnPaste: true,
+                  formatOnType: true,
+                  tabSize: 2,
                 }}
-                rows="22"
-                spellCheck={false}
               />
             </div>
           )}
@@ -314,6 +365,9 @@ function JsonEditorPanel({ document, onSave, onClose }) {
           <div className="json-validation-metrics">
             <code className="json-validation-snippet">{prettyJson.length} chars</code>
             <code className="json-validation-snippet">{activeTab}</code>
+            <code className="json-validation-snippet">
+              {editorMode === "tree" ? "tree-mode" : editorReady ? "monaco-ready" : "loading-editor"}
+            </code>
           </div>
         </div>
       </div>
