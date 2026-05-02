@@ -14,6 +14,7 @@ function AdminPage() {
   const [message, setMessage] = useState("");
   const [errorDetails, setErrorDetails] = useState(null);
   const [selectedDocument, setSelectedDocument] = useState(null);
+  const [activeRequestTab, setActiveRequestTab] = useState("headers");
   const [importForm, setImportForm] = useState({
     title: "",
     sourceUrl: "",
@@ -199,88 +200,141 @@ function AdminPage() {
             )}
 
             <form className="form-grid" onSubmit={handlePreviewImport}>
-              <label>
-                Title
-                <input
-                  type="text"
-                  name="title"
-                  value={importForm.title}
-                  onChange={handleChange}
-                  placeholder="Example: Banking Schemes API"
-                  required
-                />
-              </label>
+              <div className="full-width request-composer">
+                <div className="request-composer-topbar">
+                  <label className="request-method-field">
+                    <span className="cm-mini-label">Method</span>
+                    <select
+                      name="requestMethod"
+                      value={importForm.requestMethod}
+                      onChange={handleChange}
+                    >
+                      <option value="GET">GET</option>
+                      <option value="POST">POST</option>
+                      <option value="PUT">PUT</option>
+                      <option value="PATCH">PATCH</option>
+                    </select>
+                  </label>
 
-              <label>
-                API URL
-                <input
-                  type="text"
-                  name="sourceUrl"
-                  value={importForm.sourceUrl}
-                  onChange={handleChange}
-                  placeholder="https://example.com/api/data"
-                  required
-                />
-              </label>
+                  <label className="request-url-field">
+                    <span className="cm-mini-label">API URL</span>
+                    <input
+                      type="text"
+                      name="sourceUrl"
+                      value={importForm.sourceUrl}
+                      onChange={handleChange}
+                      placeholder="https://example.com/api/data"
+                      required
+                    />
+                  </label>
 
-              <label>
-                Method
-                <select
-                  name="requestMethod"
-                  value={importForm.requestMethod}
-                  onChange={handleChange}
-                >
-                  <option value="GET">GET</option>
-                  <option value="POST">POST</option>
-                  <option value="PUT">PUT</option>
-                  <option value="PATCH">PATCH</option>
-                </select>
-              </label>
+                  <button type="submit" className="primary-button">
+                    Preview Import
+                  </button>
+                </div>
 
-              <label>
-                Content Type
-                <input
-                  type="text"
-                  name="contentType"
-                  value={importForm.contentType}
-                  onChange={handleChange}
-                  placeholder="application/json"
-                />
-              </label>
+                <div className="request-meta-grid">
+                  <label>
+                    Title
+                    <input
+                      type="text"
+                      name="title"
+                      value={importForm.title}
+                      onChange={handleChange}
+                      placeholder="Example: Banking Schemes API"
+                      required
+                    />
+                  </label>
 
-              <label>
-                Status
-                <select name="status" value={importForm.status} onChange={handleChange}>
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                </select>
-              </label>
+                  <label>
+                    Content Type
+                    <input
+                      type="text"
+                      name="contentType"
+                      value={importForm.contentType}
+                      onChange={handleChange}
+                      placeholder="application/json"
+                    />
+                  </label>
 
-              <label className="full-width">
-                Request Headers (JSON)
-                <textarea
-                  name="requestHeaders"
-                  value={importForm.requestHeaders}
-                  onChange={handleChange}
-                  rows="8"
-                />
-              </label>
+                  <label>
+                    Status
+                    <select name="status" value={importForm.status} onChange={handleChange}>
+                      <option value="draft">Draft</option>
+                      <option value="published">Published</option>
+                    </select>
+                  </label>
+                </div>
 
-              <label className="full-width">
-                Request Body (JSON)
-                <textarea
-                  name="requestBody"
-                  value={importForm.requestBody}
-                  onChange={handleChange}
-                  rows="8"
-                  placeholder='{\n  "key": "value"\n}'
-                />
-              </label>
+                <div className="request-tab-strip" role="tablist" aria-label="Request builder tabs">
+                  <button
+                    type="button"
+                    className={activeRequestTab === "headers" ? "is-active" : ""}
+                    onClick={() => setActiveRequestTab("headers")}
+                  >
+                    Headers
+                  </button>
+                  <button
+                    type="button"
+                    className={activeRequestTab === "body" ? "is-active" : ""}
+                    onClick={() => setActiveRequestTab("body")}
+                  >
+                    Body
+                  </button>
+                  <button
+                    type="button"
+                    className={activeRequestTab === "settings" ? "is-active" : ""}
+                    onClick={() => setActiveRequestTab("settings")}
+                  >
+                    Settings
+                  </button>
+                </div>
 
-              <div className="card-actions">
-                <button type="submit" className="primary-button">
-                  Preview Import
-                </button>
+                <div className="request-tab-panel">
+                  {activeRequestTab === "headers" && (
+                    <label className="full-width">
+                      Request Headers (JSON)
+                      <textarea
+                        name="requestHeaders"
+                        value={importForm.requestHeaders}
+                        onChange={handleChange}
+                        rows="10"
+                      />
+                    </label>
+                  )}
+
+                  {activeRequestTab === "body" && (
+                    <label className="full-width">
+                      Request Body (JSON)
+                      <textarea
+                        name="requestBody"
+                        value={importForm.requestBody}
+                        onChange={handleChange}
+                        rows="10"
+                        placeholder='{\n  "key": "value"\n}'
+                      />
+                    </label>
+                  )}
+
+                  {activeRequestTab === "settings" && (
+                    <div className="request-settings-grid">
+                      <div className="request-settings-card">
+                        <span className="cm-mini-label">Request Profile</span>
+                        <strong>{importForm.requestMethod} JSON Request</strong>
+                        <p className="cm-muted-text">
+                          Use this mode for external CMS APIs that return structured JSON responses.
+                        </p>
+                      </div>
+                      <div className="request-settings-card">
+                        <span className="cm-mini-label">Default Behavior</span>
+                        <strong>Preview before save</strong>
+                        <p className="cm-muted-text">
+                          Imported data opens in the editor first, then you decide when to store it in MongoDB.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </form>
           </section>
