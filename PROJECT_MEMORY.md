@@ -27,6 +27,8 @@ Frontend:
 - Axios API layer
 - CM-style admin shell with content explorer and request composer
 - Postman-inspired JSON editor workspace with `Pretty`, `Raw`, and `Schema` views
+- dual renderer support with Monaco as the default and `react-json-view` as the alternate tree mode
+- raw JSON editing works in both renderer modes
 
 Deployment:
 
@@ -76,7 +78,6 @@ Implemented:
 
 Not yet implemented:
 
-- Monaco Editor
 - authentication screens and session handling
 - dark/light theme toggle
 - keyboard shortcuts
@@ -95,8 +96,9 @@ Not yet implemented:
 
 ## Known Technical Debt
 
-- frontend still depends on `react-json-view`; this is transitional and should be replaced by Monaco-based editing
-- `@monaco-editor/react` has been added, but the editor component has not yet been migrated to it
+- frontend now supports both Monaco and `react-json-view`; Monaco is the primary path and tree mode remains as an alternate renderer
+- Monaco/tree mode switching should be verified against the save flow in the browser after each editor change
+- raw JSON editing semantics are now shared across both renderer modes
 - backend routes are not yet protected
 - request validation is still handled too close to controller logic
 - README history and implementation docs were previously drifting behind the real code
@@ -127,15 +129,15 @@ This means browser traffic is expected to go through Kong in the Docker setup, n
 - imported JSON is flexible but not yet schema-governed
 - no revision history means updates overwrite content without rollback support
 - no automated test suite means regressions are likely as Phase 2 expands
-- Monaco migration will touch both package dependencies and editor behavior
+- the Monaco migration now needs browser verification for both renderer modes and the existing save flow
 
 ## Next 10 Concrete Steps
 
-1. Replace `react-json-view` inside the admin editor with Monaco while preserving `Pretty`, `Raw`, and `Schema` authoring modes.
+1. Verify Monaco and tree mode switching in the browser with the current save flow.
 2. Add Monaco formatting, inline parse feedback, and save-safe validation behavior for JSON editing.
-3. Update client styling so Monaco fits the CM/Postman workspace cleanly on desktop and mobile.
-4. Rebuild and verify the Docker-served frontend after the Monaco migration.
-5. Remove or minimize the remaining `react-json-view` dependency once Monaco fully covers the editing flow.
+3. Update client styling so both Monaco and `react-json-view` fit the CM/Postman workspace cleanly on desktop and mobile.
+4. Rebuild and verify the Docker-served frontend after the editor dual-mode changes.
+5. Decide whether `react-json-view` should remain as a long-term alternate or be deprecated after Monaco fully covers the editing flow.
 6. Add backend auth dependencies and create a `User` model with hashed passwords and role fields.
 7. Add auth controller/routes for login, session bootstrap, and current-user lookup.
 8. Add JWT verification middleware and RBAC middleware for `Admin`, `Editor`, and `Viewer`.

@@ -601,6 +601,13 @@ button:hover {
   background: #eef3f8;
 }
 
+.json-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .json-tab-strip {
   display: inline-flex;
   align-items: center;
@@ -628,6 +635,44 @@ button:hover {
   color: #f8fafc;
 }
 
+.json-renderer-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 12px;
+  border-left: 1px solid #cbd5e1;
+}
+
+.json-renderer-switch button {
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  font-weight: 700;
+}
+
+.json-renderer-switch button.is-active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #f8fafc;
+}
+
+.json-renderer-switch button {
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.json-renderer-switch button:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.json-toolbar-left .json-tab-strip,
+.json-toolbar-left .json-renderer-switch {
+  min-height: 36px;
+}
+
 .json-toolbar-actions {
   display: flex;
   align-items: center;
@@ -647,6 +692,19 @@ button:hover {
   min-width: 0;
 }
 
+.json-raw-panel {
+  min-height: 480px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.json-raw-panel .monaco-editor,
+.json-raw-panel .monaco-editor-background,
+.json-raw-panel .overflow-guard {
+  border-radius: 8px;
+}
+
 .json-raw-input {
   min-height: 480px;
   border: none;
@@ -662,6 +720,15 @@ button:hover {
 .json-raw-input:focus {
   outline: 2px solid #38bdf8;
   outline-offset: -2px;
+}
+
+.json-editor-wrapper .monaco-editor,
+.json-editor-wrapper .monaco-editor-background {
+  border-radius: 8px;
+}
+
+.json-editor-wrapper .monaco-editor .overflow-guard {
+  border-radius: 8px;
 }
 
 .json-schema-panel {
@@ -779,6 +846,17 @@ button:hover {
   .json-meta-tabs {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .json-toolbar-left {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .json-renderer-switch {
+    padding-left: 0;
+    border-left: none;
+    flex-wrap: wrap;
   }
 
   .json-toolbar-actions {

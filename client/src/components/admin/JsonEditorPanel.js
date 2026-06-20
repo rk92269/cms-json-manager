@@ -301,18 +301,37 @@ function JsonEditorPanel({ document, onSave, onClose }) {
         </div>
 
         <div className="json-editor-wrapper">
-          {editorMode === "tree" && activeTab !== "schema" && (
+          {editorMode === "tree" && activeTab === "pretty" && (
             <ReactJson
               src={jsonData}
               name={false}
               theme="rjv-default"
-              collapsed={activeTab === "raw" ? false : 1}
+              collapsed={1}
               displayDataTypes={false}
               displayObjectSize={true}
               enableClipboard={true}
               onEdit={handleJsonChange}
               onAdd={handleJsonChange}
               onDelete={handleJsonChange}
+            />
+          )}
+
+          {editorMode === "tree" && activeTab === "raw" && (
+            <textarea
+              className="json-raw-input"
+              value={rawJson}
+              onChange={(event) => {
+                setRawJson(event.target.value);
+                try {
+                  const parsedJson = JSON.parse(event.target.value);
+                  setJsonData(parsedJson);
+                  setError("");
+                } catch (parseError) {
+                  setError(`Invalid JSON: ${parseError.message}`);
+                }
+              }}
+              rows="22"
+              spellCheck={false}
             />
           )}
 
