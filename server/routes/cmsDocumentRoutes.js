@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   getAllDocuments,
+  getPublicDocuments,
   getDocumentById,
   createDocument,
   updateDocument,
@@ -16,6 +17,9 @@ router.post("/preview", previewCmsApiData);
 
 // Import JSON from any external CMS API and save it to MongoDB.
 router.post("/import", importFromCmsApi);
+
+// Public wrapper API for published content.
+router.get("/public", getPublicDocuments);
 
 // CRUD routes for saved CMS documents.
 router.get("/", getAllDocuments);

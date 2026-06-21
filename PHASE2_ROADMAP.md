@@ -6,7 +6,7 @@ Phase 2 upgrades the current CMS JSON Manager from a functional prototype into a
 
 - JWT-based authentication
 - role-based access control
-- Monaco-based JSON authoring
+- Monaco-based JSON authoring with an optional `react-json-view` tree mode during transition
 - schema-aware validation
 - stronger backend safety and error handling
 - revision history and better content operations
@@ -20,7 +20,8 @@ This roadmap is implementation-oriented and should be followed one file at a tim
 - Docker Compose remains the default local runtime path
 - JWT is the selected authentication strategy
 - `Admin`, `Editor`, and `Viewer` are the initial system roles
-- Monaco Editor is the target replacement for the current transitional JSON editor
+- Monaco Editor is the primary JSON authoring surface
+- `react-json-view` remains an alternate renderer until Monaco fully covers the authoring flow
 - TypeScript migration is intentionally deferred beyond this baseline Phase 2 scope
 
 ## Workstream 1: Authentication and Authorization
@@ -110,13 +111,14 @@ This roadmap is implementation-oriented and should be followed one file at a tim
 
 ### Scope
 
-- replace `react-json-view`
+- modernize the JSON authoring experience
 - keep Postman-style editing workflow
 - improve validation and editing ergonomics
 
 ### Deliverables
 
 - Monaco Editor integration in the admin JSON editor panel
+- preserve `react-json-view` as a selectable alternate tree mode during the transition period
 - preserve the editor modes:
   - `Pretty`
   - `Raw`
@@ -137,6 +139,7 @@ This roadmap is implementation-oriented and should be followed one file at a tim
 ### Acceptance Criteria
 
 - Monaco loads document JSON without breaking existing save flow
+- `react-json-view` remains available as an alternate renderer while Monaco stabilizes
 - invalid raw JSON shows inline errors and blocks save
 - beautify rewrites valid JSON
 - mobile layout remains usable

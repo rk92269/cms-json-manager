@@ -53,6 +53,36 @@ const getAllDocuments = async (req, res) => {
   }
 };
 
+const getPublicDocuments = async (req, res) => {
+  try {
+    const documents = await CmsDocument.find({ status: "published" }).sort({ updatedAt: -1 });
+
+    const payload = documents.map((document) => ({
+      id: document._id,
+      title: document.title,
+      sourceUrl: document.sourceUrl,
+      contentType: document.contentType,
+      status: document.status,
+      updatedAt: document.updatedAt,
+      schemaVersion: document.schemaVersion || null,
+      jsonData: document.jsonData,
+    }));
+
+    res.status(200).json({
+      items: payload,
+      meta: {
+        total: payload.length,
+        generatedAt: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch public documents.",
+      error: error.message,
+    });
+  }
+};
+
 const getDocumentById = async (req, res) => {
   try {
     const document = await CmsDocument.findById(req.params.id);
@@ -213,6 +243,7 @@ const importFromCmsApi = async (req, res) => {
 
 module.exports = {
   getAllDocuments,
+  getPublicDocuments,
   getDocumentById,
   createDocument,
   updateDocument,

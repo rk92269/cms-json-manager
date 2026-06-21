@@ -52,6 +52,7 @@ function JsonEditorPanel({ document, onSave, onClose }) {
   const [rawJson, setRawJson] = useState("{}");
   const [status, setStatus] = useState("draft");
   const [error, setError] = useState("");
+  const [diagnostics, setDiagnostics] = useState([]);
   const [activeTab, setActiveTab] = useState("pretty");
   const [activeMetaTab, setActiveMetaTab] = useState("response");
   const [editorMode, setEditorMode] = useState("monaco");
@@ -69,6 +70,7 @@ function JsonEditorPanel({ document, onSave, onClose }) {
       setRawJson(formatJson(nextJson));
       setStatus(document.status || "draft");
       setError("");
+      setDiagnostics([]);
       setActiveTab("pretty");
       setActiveMetaTab("response");
       setEditorMode("monaco");
@@ -80,6 +82,7 @@ function JsonEditorPanel({ document, onSave, onClose }) {
     setJsonData(nextJson);
     setRawJson(formatJson(nextJson));
     setError("");
+    setDiagnostics([]);
   };
 
   const handleEditorChange = (value = "") => {
@@ -92,6 +95,17 @@ function JsonEditorPanel({ document, onSave, onClose }) {
     } catch (parseError) {
       setError(`Invalid JSON: ${parseError.message}`);
     }
+  };
+
+  const handleSwitchEditorMode = (mode) => {
+    setEditorMode(mode);
+    if (mode === "tree") {
+      setDiagnostics([]);
+    }
+  };
+
+  const handleDiagnostics = (nextDiagnostics = []) => {
+    setDiagnostics(nextDiagnostics);
   };
 
   const handleBeautify = () => {
@@ -112,6 +126,7 @@ function JsonEditorPanel({ document, onSave, onClose }) {
       setJsonData(parsedJson);
       setRawJson(formatJson(parsedJson));
       setError("");
+      setDiagnostics([]);
     } catch (parseError) {
       setError(`Invalid JSON: ${parseError.message}`);
     }
@@ -120,6 +135,11 @@ function JsonEditorPanel({ document, onSave, onClose }) {
   const handleSave = () => {
     if (!document) {
       setError("No document selected.");
+      return;
+    }
+
+    if (diagnostics.length > 0) {
+      setError("Cannot save while Monaco reports JSON issues.");
       return;
     }
 
@@ -139,6 +159,7 @@ function JsonEditorPanel({ document, onSave, onClose }) {
   };
 
   const prettyJson = formatJson(jsonData);
+  const canSave = Boolean(document) && !error && diagnostics.length === 0 && rawJson.trim().length > 0;
   const jsonSummary = {
     rootType: detectType(jsonData),
     topLevelKeys:
@@ -276,14 +297,14 @@ function JsonEditorPanel({ document, onSave, onClose }) {
               <button
                 type="button"
                 className={editorMode === "monaco" ? "is-active" : ""}
-                onClick={() => setEditorMode("monaco")}
+                onClick={() => handleSwitchEditorMode("monaco")}
               >
                 Monaco
               </button>
               <button
                 type="button"
                 className={editorMode === "tree" ? "is-active" : ""}
-                onClick={() => setEditorMode("tree")}
+                onClick={() => handleSwitchEditorMode("tree")}
               >
                 Tree
               </button>
@@ -322,6 +343,7 @@ function JsonEditorPanel({ document, onSave, onClose }) {
               value={rawJson}
               onChange={(event) => {
                 setRawJson(event.target.value);
+                setDiagnostics([]);
                 try {
                   const parsedJson = JSON.parse(event.target.value);
                   setJsonData(parsedJson);
@@ -343,6 +365,7 @@ function JsonEditorPanel({ document, onSave, onClose }) {
                 language="json"
                 value={rawJson}
                 onChange={handleEditorChange}
+                onValidate={handleDiagnostics}
                 onMount={() => setEditorReady(true)}
                 theme="vs-dark"
                 options={{
@@ -368,7 +391,7 @@ function JsonEditorPanel({ document, onSave, onClose }) {
                 </div>
                 <div>
                   <span className="json-schema-label">Validation</span>
-                  <strong>Basic JSON structure</strong>
+                  <strong>{diagnostics.length ? `${diagnostics.length} issue(s)` : "Basic JSON structure"}</strong>
                 </div>
               </div>
 
@@ -379,7 +402,11 @@ function JsonEditorPanel({ document, onSave, onClose }) {
 
         <div className="json-validation-bar">
           <span className="json-validation-state">
-            {error ? "Validation needs attention" : "JSON is ready to save"}
+            {error
+              ? "Validation needs attention"
+              : diagnostics.length > 0
+                ? "Monaco found JSON issues"
+                : "JSON is ready to save"}
           </span>
           <div className="json-validation-metrics">
             <code className="json-validation-snippet">{prettyJson.length} chars</code>
@@ -387,12 +414,15 @@ function JsonEditorPanel({ document, onSave, onClose }) {
             <code className="json-validation-snippet">
               {editorMode === "tree" ? "tree-mode" : editorReady ? "monaco-ready" : "loading-editor"}
             </code>
+            <code className="json-validation-snippet">
+              {diagnostics.length ? `${diagnostics.length} errors` : "no diagnostics"}
+            </code>
           </div>
         </div>
       </div>
 
       <div className="card-actions">
-        <button type="button" className="primary-button" onClick={handleSave}>
+        <button type="button" className="primary-button" onClick={handleSave} disabled={!canSave}>
           {isSavedDocument ? "Save Changes" : "Save to DB"}
         </button>
       </div>

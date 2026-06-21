@@ -20,8 +20,9 @@ Current working capabilities:
 - request builder with method, headers, and body support
 - admin authoring workspace with a CM-style layout
 - Postman-inspired JSON editing surface with `Pretty`, `Raw`, and `Schema` views
+- Monaco Editor as the primary JSON authoring surface, with `react-json-view` still available as an alternate tree mode
 - save edited JSON into MongoDB
-- public read-only view for published content
+- public read-only view for published content through a wrapper API
 - Dockerized local deployment through Kong and Nginx
 
 Current implementation status:
@@ -114,6 +115,7 @@ Current routes:
 - `DELETE /api/documents/:id`
 - `POST /api/documents/preview`
 - `POST /api/documents/import`
+- `GET /api/documents/public`
 - `GET /health`
 
 ## Local Development
@@ -189,6 +191,7 @@ Chosen defaults for Phase 2:
 - authentication: JWT
 - authorization: role-based access control with `Admin`, `Editor`, and `Viewer`
 - editor direction: Monaco Editor as the primary JSON authoring surface
+- editor fallback: `react-json-view` remains available as a tree-style alternate renderer
 - validation direction: JSON Schema-based validation and schema-aware content types
 - workflow rule: continue implementation one file at a time
 
@@ -208,6 +211,7 @@ Immediate priority:
 - add route-level input validation and sanitization
 - implement centralized error handling
 - replace `react-json-view` with Monaco-based editing
+- keep `react-json-view` as an alternate editor path until the Monaco flow fully covers the authoring experience
 - add schema-aware validation for content documents
 
 Next sprint:
@@ -234,5 +238,5 @@ Later:
 - inspect JSON in pretty, raw, and schema-oriented views
 - save JSON into MongoDB
 - publish or keep content in draft status
-- view published content in the public interface
+- view published content in the public interface through the `/api/documents/public` wrapper endpoint
 - run locally through Docker with gateway and load balancer layers

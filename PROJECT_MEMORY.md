@@ -29,6 +29,7 @@ Frontend:
 - Postman-inspired JSON editor workspace with `Pretty`, `Raw`, and `Schema` views
 - dual renderer support with Monaco as the default and `react-json-view` as the alternate tree mode
 - raw JSON editing works in both renderer modes
+- public content viewer now uses a collapsible tree-style layout instead of dumping full JSON
 
 Deployment:
 
@@ -47,6 +48,7 @@ Implemented:
 - CRUD routes for documents
 - preview route for external API JSON without immediate save
 - import route for saving previewed or fetched JSON into MongoDB
+- public wrapper route at `GET /api/documents/public`
 - health endpoint
 - upstream error passthrough for API preview/import debugging
 
@@ -74,6 +76,8 @@ Implemented:
   - raw JSON editing
   - schema-oriented view
   - beautify/apply actions
+- Monaco-based authoring as the default editor experience
+- `react-json-view` tree mode as an alternate renderer for users who prefer it
 - public view for saved/published content
 
 Not yet implemented:
@@ -90,6 +94,7 @@ Not yet implemented:
 - Docker stack builds and runs successfully
 - frontend loads from `http://localhost:3000`
 - API is reachable through Kong at `http://localhost:8000/api/documents`
+- public read endpoint is reachable at `http://localhost:8000/api/documents/public`
 - preview-before-save workflow works at the API contract level
 - document editing and save flow is present in the UI
 - published content can be surfaced in the public page
@@ -99,6 +104,7 @@ Not yet implemented:
 - frontend now supports both Monaco and `react-json-view`; Monaco is the primary path and tree mode remains as an alternate renderer
 - Monaco/tree mode switching should be verified against the save flow in the browser after each editor change
 - raw JSON editing semantics are now shared across both renderer modes
+- the public page is now a collapsible document explorer, but should still be checked for readability on smaller screens
 - backend routes are not yet protected
 - request validation is still handled too close to controller logic
 - README history and implementation docs were previously drifting behind the real code
@@ -130,16 +136,17 @@ This means browser traffic is expected to go through Kong in the Docker setup, n
 - no revision history means updates overwrite content without rollback support
 - no automated test suite means regressions are likely as Phase 2 expands
 - the Monaco migration now needs browser verification for both renderer modes and the existing save flow
+- the public wrapper route and tree viewer should be tested together so content stays readable and expandable
 
 ## Next 10 Concrete Steps
 
 1. Verify Monaco and tree mode switching in the browser with the current save flow.
-2. Add Monaco formatting, inline parse feedback, and save-safe validation behavior for JSON editing.
-3. Update client styling so both Monaco and `react-json-view` fit the CM/Postman workspace cleanly on desktop and mobile.
-4. Rebuild and verify the Docker-served frontend after the editor dual-mode changes.
-5. Decide whether `react-json-view` should remain as a long-term alternate or be deprecated after Monaco fully covers the editing flow.
-6. Add backend auth dependencies and create a `User` model with hashed passwords and role fields.
-7. Add auth controller/routes for login, session bootstrap, and current-user lookup.
-8. Add JWT verification middleware and RBAC middleware for `Admin`, `Editor`, and `Viewer`.
-9. Protect document routes so viewers are read-only, editors can preview/import/update, and admins can delete/manage integrations.
-10. Add request validation, sanitization, and centralized backend error middleware before moving into schema validation and versioning.
+2. Verify the public wrapper endpoint and collapsible public viewer on desktop and mobile.
+3. Add Monaco formatting, inline parse feedback, and save-safe validation behavior for JSON editing.
+4. Update client styling so both Monaco and `react-json-view` fit the CM/Postman workspace cleanly on desktop and mobile.
+5. Rebuild and verify the Docker-served frontend after the editor dual-mode changes.
+6. Decide whether `react-json-view` should remain as a long-term alternate or be deprecated after Monaco fully covers the editing flow.
+7. Add backend auth dependencies and create a `User` model with hashed passwords and role fields.
+8. Add auth controller/routes for login, session bootstrap, and current-user lookup.
+9. Add JWT verification middleware and RBAC middleware for `Admin`, `Editor`, and `Viewer`.
+10. Protect document routes so viewers are read-only, editors can preview/import/update, and admins can delete/manage integrations.

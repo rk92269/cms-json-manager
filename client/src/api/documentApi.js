@@ -32,6 +32,11 @@ export const deleteDocument = async (id) => {
   return response.data;
 };
 
+export const getPublicDocuments = async () => {
+  const response = await api.get("/public");
+  return response.data;
+};
+
 export const previewDocumentFromApi = async (previewData) => {
   const response = await api.post("/preview", previewData);
   return response.data;
